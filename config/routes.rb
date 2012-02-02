@@ -1,4 +1,11 @@
 Twonversations::Application.routes.draw do
+  get "/login" => "home#index", :as => :login
+  get "/logout" => "sessions#destroy", :as => :logout
+  
+  match '/auth/twitter/callback', :to => 'sessions#create'
+  match '/auth/failure', :to => 'sessions#failure'
+  
+  root :to => 'home#index'
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
