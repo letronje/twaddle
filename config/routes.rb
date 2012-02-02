@@ -1,6 +1,7 @@
 Twonversations::Application.routes.draw do
   get "/login" => "home#index", :as => :login
   get "/logout" => "sessions#destroy", :as => :logout
+  get '/home' => "home#tweets", :as => :home
   
   match '/auth/twitter/callback', :to => 'sessions#create'
   match '/auth/failure', :to => 'sessions#failure'
