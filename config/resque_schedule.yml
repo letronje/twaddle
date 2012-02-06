@@ -1,0 +1,4 @@
+fetch_tweets:
+  every: 1m
+  class: FetchTweets
+  description: "Fetches Tweets for users and populates mongodb"
