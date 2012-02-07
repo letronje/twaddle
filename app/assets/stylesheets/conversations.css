@@ -1,6 +1,27 @@
+#header{
+    float: left; 
+    font-weight: bold; 
+    font-size: 1.5em;
+}
+
+#logout{
+    float: right;
+}
+
+#progress{
+    font-size: 1.3em;
+    line-height: 2em;
+}
+
+#conversations{
+    margin-top: 10px;
+}
+
 img.profile{
     border-radius : 10px;
     float: left;
+    width: 48px;
+    height: 48px;
 }
 
 div.root {
@@ -22,6 +43,7 @@ div.child{
 div.text{
     float: left;
     margin-left: 10px;
+    font-family: 'Asap';
 }
 
 div.today{
@@ -32,6 +54,8 @@ div.today{
 
 div.last-hour{
     background-color: #E0EEEE;
+    border: solid 1px lightgray;
+    
 }
 
 span.tweet-text-uname{
@@ -46,7 +70,7 @@ span.tweet-text-hashtag{
 }
 
 div.tweet-uname{
-    font-size: 10px;
+    font-size: 0.7em;
     color: darkgray;
     clear: left;
     float: left;

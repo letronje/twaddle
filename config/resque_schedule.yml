@@ -1,4 +1,4 @@
-fetch_tweets:
+ensure_conversations:
   every: 1m
-  class: FetchTweets
-  description: "Fetches Tweets for users and populates mongodb"
+  class: EnsureConversations
+  description: "Ensures that data needed to render conversation view is ready"

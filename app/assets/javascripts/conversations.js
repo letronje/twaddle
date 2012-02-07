@@ -1,7 +1,3 @@
-$ (document).ready (function () {
-  renderConversations (data);
-})
-
 function p (o) {
   try {
     console.log (o)
@@ -72,7 +68,30 @@ function tweetHtml (tweet) {
   return tweet.txt
     .replace (/(@[a-zA-Z_]+)/g, "<span class='tweet-text-uname'>$1</span>")
     .replace (/(#[^\s]+)/g, "<span class='tweet-text-hashtag'>$1</span>")
-    .replace (/(http:\/\/[^\s]+)/g, "<a target='_blank' href='$1'>$1</a>")
+    .replace (/(https?:\/\/[^\s]+)/g, "<a target='_blank' href='$1'>$1</a>")
 }
 
+$ (document).ready (function () {
+  $.blockUI({ 
+    message: "<span id='progress'>Fetching Conversations </span><br /><img src='/assets/ajax-loader.gif' />",
+    css: { 
+      border: 'none', 
+      padding: '15px',
+      backgroundColor: '#000', 
+      'border-radius': '10px', 
+      opacity: .5, 
+      width: '300px',
+      height: '70px' ,
+      color: '#fff' 
+    } 
+  }); 
 
+  $.ajax({
+    url : '/conversations', 
+    type: 'GET',
+    success : function(data){
+      renderConversations (data);
+      $.unblockUI ()
+    }
+  })
+})

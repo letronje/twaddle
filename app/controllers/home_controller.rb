@@ -3,18 +3,23 @@ class HomeController < ApplicationController
     @user = User.find(session[:user_id]) rescue nil
   end
 
-  def tweets
-    @user = User.find(session[:user_id]) rescue nil
-    db = Mongo::Connection.new.db("twonversations")
-    twitter = @user.twitter_client
-    
-    replies = {}
-    ancestors = {}
+  def conversations 
+    user = User.find(session[:user_id]) rescue nil
 
+    if user.nil?
+      render :nothing => true
+      return
+    end
+
+    db = Mongo::Connection.new.db("twonversations")
+    twitter = user.twitter_client
+
+    user.ensure_conversations(db)
+    
     tweets = {}
     root_ids = Set.new
     
-    @user.replies(db).each do |tweet|
+    user.replies(db).each do |tweet|
       children_ids = Set.new
 
       t = Util::Mongo.tweet_to_hash(tweet)
@@ -32,7 +37,6 @@ class HomeController < ApplicationController
           t = tweets[pid]
           unless t
             mt = Util::Mongo.ensure_tweet(db, pid, twitter)
-            ap mt
             t = Util::Mongo.tweet_to_hash(mt)
           end
         end
@@ -49,6 +53,6 @@ class HomeController < ApplicationController
     end
 
     roots = root_ids.sort{|a, b| b <=> a}.map{|rid| tweets[rid]}
-    @data = roots
+    render :json => roots.to_json
   end
 end

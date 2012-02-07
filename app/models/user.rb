@@ -57,11 +57,13 @@ class User < ActiveRecord::Base
           last_id = all_tweets.last.id
         end
 
+        s=Time.now
         tweets = twitter.home_timeline(:since_id => last_id,
                                        :count => tweets_per_attempt,
                                        :include_entities => true,
                                        :exclude_replies => false)
-
+        e=Time.now
+        puts "timeline took #{e-s}"
         break all_tweets if tweets.empty?
 
         all_tweets + tweets.reverse
@@ -81,11 +83,30 @@ class User < ActiveRecord::Base
     replies_collection(db).find.to_a
   end
   
-  def ensure_conversations(db)
+  def ensure_tweets_ancestry(db)
     twitter = twitter_client
 
     replies(db).each do |r|
       Util::Mongo.ensure_tweet_ancestry(db, r, twitter)
+    end
+  end
+
+  def ensure_conversations(db)
+    s = Time.now
+    lock = Redis::Lock.new(id,
+                           :expiration => 1.minute,
+                           :timeout => 1.minute)
+    e = Time.now
+    puts e-s
+    lock.lock do
+      s = Time.now
+      fetch_replies(db)
+      e=Time.now
+      puts e-s
+      s=Time.now
+      ensure_tweets_ancestry(db)
+      e=Time.now
+      puts e-s
     end
   end
 end

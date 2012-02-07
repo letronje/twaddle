@@ -5,7 +5,8 @@ class SessionsController < ApplicationController
     info = auth_hash["info"]
     access_token = auth_hash["extra"]["access_token"]
     
-    authorization = Authorization.find_by_provider_and_uid(auth_hash["provider"], auth_hash["uid"])
+    authorization = Authorization.find_by_provider_and_uid(auth_hash["provider"],
+                                                           auth_hash["uid"])
 
     if authorization
       user = authorization.user
@@ -24,6 +25,8 @@ class SessionsController < ApplicationController
       
       user.save!
     end
+
+    Resque.enqueue(EnsureConversations, user.id)
 
     session[:user_id] = user.id
     redirect_to root_path

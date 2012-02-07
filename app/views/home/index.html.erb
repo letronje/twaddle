@@ -1,6 +1,23 @@
 <% if @user %>
-  <h1>Welcome <%= @user.name %> !</h1>
+
+<%= stylesheet_link_tag "conversations" %>
+
+<link href='http://fonts.googleapis.com/css?family=Asap' rel='stylesheet' type='text/css'>
+
+<div id="header">
+  Welcome <%= @user.name %> !
+</div>
+
+<div id="logout">
   <%= link_to 'Logout', logout_path %>
+</div>
+
+<div id="conversations"></div>
+
+<%= javascript_include_tag "jquery.blockUI", "conversations" %>
+
 <% else %>
-  <%= link_to image_tag("twitter-login-button.png") , '/auth/twitter' %>
+
+<%= link_to image_tag("twitter-login-button.png") , '/auth/twitter' %>
+
 <% end %>
