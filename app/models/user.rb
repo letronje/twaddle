@@ -13,13 +13,13 @@ class User < ActiveRecord::Base
                         :oauth_token_secret => twauth.token_secret)
   end
 
-  def tweets_collection(db)
-    Util::Mongo.user_tweets_collection(db, self)
+  def replies_collection(db)
+    Util::Mongo.user_replies_collection(db, self)
   end
   
-  def fetch_tweets(db)
+  def fetch_replies(db)
     twitter = twitter_client
-    coll = tweets_collection(db)
+    coll = self.replies_collection(db)
 
     max_attempts = 10
     tweets_per_attempt = 200
@@ -68,18 +68,23 @@ class User < ActiveRecord::Base
       }
     end
 
-    tweets.each {|t| coll.insert t.to_hash}
+    replies = tweets.reject { |t| t.in_reply_to_status_id.nil? }
+    replies.each { |t| coll.insert t.to_hash }
   end
 
-  def reply_tweets(db)
-    tweets = tweets_collection(db)
-    tweets.find({:in_reply_to_status_id => {"$ne" => nil}}).to_a
+  # def reply_tweets(db)
+  #   tweets = tweets_collection(db)
+  #   tweets.find({:in_reply_to_status_id => {"$ne" => nil}}).to_a
+  # end
+
+  def replies(db)
+    replies_collection(db).find.to_a
   end
   
-  def fetch_conversations(db)
+  def ensure_conversations(db)
     twitter = twitter_client
 
-    reply_tweets(db).each do |r|
+    replies(db).each do |r|
       Util::Mongo.ensure_tweet_ancestry(db, r, twitter)
     end
   end

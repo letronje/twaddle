@@ -9,8 +9,8 @@ module Util
       db[name]
     end
     
-    def self.user_tweets_collection(db, user)
-      capped_collection(db, "tweets_#{user.twauth.uid}", 10.megabytes)
+    def self.user_replies_collection(db, user)
+      capped_collection(db, "replies_#{user.twauth.uid}", 10.megabytes)
     end
 
     def self.tweets_collection(db)
@@ -38,6 +38,29 @@ module Util
           break
         end
       end
+    end
+
+    def self.tweet_to_hash(tweet)
+      txt = tweet["text"]
+
+      # loop do
+      #   txt.lstrip!
+      #   ntxt = txt.gsub(/^@[a-zA-Z_]+/, '')
+      #   break if ntxt == txt
+      #   txt = ntxt
+      # end
+
+      {
+        :id => tweet["id"],
+        :txt => txt,
+        :pid => tweet["in_reply_to_status_id"],
+        :name => tweet["user"]["name"],
+        :nick => tweet["user"]["screen_name"],
+        :at => tweet["created_at"],
+        :uimg => tweet["user"]["profile_image_url"],
+        :wt => 0,
+        :mid => 0
+      }
     end
   end
 end

@@ -1,0 +1,28 @@
+img.profile{
+    border-radius : 10px;
+    float: left;
+}
+div.root {
+    clear: left;
+    padding: 10px;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+    margin-top: 20px;
+    min-height: 100px;
+}
+div.child{
+    clear: left;
+    margin-top: 20px;
+    margin-left: 50px;
+    min-height: 50px;
+}
+div.text{
+    float: left;
+    margin-left: 10px;
+}
+span.tweet-text-uname{
+    color: gray;
+}
+span.tweet-text-hashtag{
+    color: darkgreen;
+}
