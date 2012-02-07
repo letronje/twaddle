@@ -1,3 +1,7 @@
+require 'action_view'
+
+include ActionView::Helpers::DateHelper
+
 module Util
   class Mongo
     def self.capped_collection(db, name, size)
@@ -49,17 +53,24 @@ module Util
       #   break if ntxt == txt
       #   txt = ntxt
       # end
+      at = tweet["created_at"]
+      at_time = Time.zone.parse(at)
 
+      today = ((Time.now - at_time) <= 24.hours)
+      last_hour  = (Time.now - at_time) <= 1.hours
+      
       {
         :id => tweet["id"],
         :txt => txt,
         :pid => tweet["in_reply_to_status_id"],
         :name => tweet["user"]["name"],
         :nick => tweet["user"]["screen_name"],
-        :at => tweet["created_at"],
+        :ago => distance_of_time_in_words_to_now(at_time),
         :uimg => tweet["user"]["profile_image_url"],
         :wt => 0,
-        :mid => 0
+        :mid => 0,
+        :today => today,
+        :last_hour => last_hour
       }
     end
   end

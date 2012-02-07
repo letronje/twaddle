@@ -2,6 +2,7 @@ img.profile{
     border-radius : 10px;
     float: left;
 }
+
 div.root {
     clear: left;
     padding: 10px;
@@ -10,19 +11,43 @@ div.root {
     margin-top: 20px;
     min-height: 100px;
 }
+
 div.child{
     clear: left;
     margin-top: 20px;
     margin-left: 50px;
     min-height: 50px;
 }
+
 div.text{
     float: left;
     margin-left: 10px;
 }
+
+div.today{
+    background-color: #ECF1EF;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+div.last-hour{
+    background-color: #E0EEEE;
+}
+
 span.tweet-text-uname{
     color: gray;
 }
+
 span.tweet-text-hashtag{
-    color: darkgreen;
+    color: white;
+    background-color: #458b74;
+    padding: 3px;
+    border-radius: 5px;
+}
+
+div.tweet-uname{
+    font-size: 10px;
+    color: darkgray;
+    clear: left;
+    float: left;
 }
