@@ -86,27 +86,30 @@ class User < ActiveRecord::Base
   def ensure_tweets_ancestry(db)
     twitter = twitter_client
 
-    replies(db).each do |r|
-      Util::Mongo.ensure_tweet_ancestry(db, r, twitter)
+    tweets = replies(db)
+
+    begin
+      loop do
+        pids = tweets.map{ |r| r["in_reply_to_status_id"] }.reject(&:nil?).uniq
+        break if pids.empty?
+        Util::Mongo.ensure_tweets(db, pids, twitter)
+        tweets = pids.map { |pid| Util::Mongo.ensure_tweet(db, pid, twitter) }
+      end
+    rescue Exception => e
+      puts [[e.message] + e.backtrace].join("\n")
+      replies(db).each do |r|
+        Util::Mongo.ensure_tweet_ancestry(db, r, twitter)
+      end
     end
   end
 
   def ensure_conversations(db)
-    s = Time.now
     lock = Redis::Lock.new(id,
                            :expiration => 1.minute,
                            :timeout => 1.minute)
-    e = Time.now
-    puts e-s
     lock.lock do
-      s = Time.now
       fetch_replies(db)
-      e=Time.now
-      puts e-s
-      s=Time.now
       ensure_tweets_ancestry(db)
-      e=Time.now
-      puts e-s
     end
   end
 end

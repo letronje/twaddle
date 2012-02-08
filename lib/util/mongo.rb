@@ -6,9 +6,13 @@ module Util
   class Mongo
     def self.capped_collection(db, name, size)
       unless db.collection_names.include? name
-        db.create_collection(name,
-                             :capped => true,
-                             :size => size)
+        begin
+          db.create_collection(name,
+                               :capped => true,
+                               :size => size)
+        rescue
+          db[name]
+        end
       end
       db[name]
     end
@@ -29,6 +33,18 @@ module Util
         tweet = coll.find(:id => id).first
       end
       tweet
+    end
+
+    def self.ensure_tweets(db, ids, twitter)
+      p = Util::Pool.new(10)
+      
+      ids.each do |id|
+        p.schedule do 
+          ensure_tweet(db, id, twitter)
+        end
+      end
+
+      p.shutdown
     end
     
     def self.ensure_tweet_ancestry(db, tweet, twitter)
