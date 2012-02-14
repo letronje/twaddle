@@ -66,7 +66,7 @@ function renderConversations(data) {
 
 function tweetHtml (tweet) {
   return tweet.txt
-    .replace (/(@[a-zA-Z_]+)/g, "<span class='tweet-text-uname'>$1</span>")
+    .replace (/(@[a-zA-Z0-9_]+)/g, "<span class='tweet-text-uname'>$1</span>")
     .replace (/(#[^\s]+)/g, "<span class='tweet-text-hashtag'>$1</span>")
     .replace (/(https?:\/\/[^\s]+)/g, "<a target='_blank' href='$1'>$1</a>")
 }
