@@ -11,15 +11,13 @@ class HomeController < ApplicationController
       return
     end
 
-    db = Mongo::Connection.new.db("twaddle")
     twitter = user.twitter_client
-
-    user.ensure_conversations(db)
+    user.ensure_conversations
     
     tweets = {}
     root_ids = Set.new
     
-    user.replies(db).each do |tweet|
+    user.replies.each do |tweet|
       children_ids = Set.new
 
       t = Util::Mongo.tweet_to_hash(tweet)
@@ -36,7 +34,7 @@ class HomeController < ApplicationController
           children_ids << id
           t = tweets[pid]
           unless t
-            mt = Util::Mongo.ensure_tweet(db, pid, twitter)
+            mt = Util::Mongo.ensure_tweet(pid, twitter)
             t = Util::Mongo.tweet_to_hash(mt)
           end
         end
