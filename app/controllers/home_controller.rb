@@ -11,16 +11,22 @@ class HomeController < ApplicationController
       return
     end
 
-    twitter = user.twitter_client
-    user.ensure_conversations
+    user.wait_for_conversations
     
+    roots = conversation_roots(user)
+    render :json => roots.to_json
+  end
+
+  def conversation_roots(user)
+    twitter = user.twitter_client
+
     tweets = {}
     root_ids = Set.new
     
     user.replies.each do |tweet|
       children_ids = Set.new
 
-      t = Util::Mongo.tweet_to_hash(tweet)
+      t = Util::Twitter.tweet_to_hash(tweet)
       
       root_id = loop do
         id = t[:id]
@@ -34,12 +40,11 @@ class HomeController < ApplicationController
           children_ids << id
           t = tweets[pid]
           unless t
-            mt = Util::Mongo.ensure_tweet(pid, twitter)
-            t = Util::Mongo.tweet_to_hash(mt)
+            mt = Util::Twitter.ensure_tweet(pid, twitter)
+            t = Util::Twitter.tweet_to_hash(mt)
           end
         end
       end
-
       root_ids << root_id
 
       root = tweets[root_id]
@@ -48,9 +53,12 @@ class HomeController < ApplicationController
       root[:c] = (root[:c] || Set.new).merge(children)
       root[:wt] = [root[:wt], children_ids.size].max
       root[:mid] = children.max_by { |c| c[:id] }[:id]
+
+      Rails.logger.info("Found root tweet #{root_id} for user #{user.id}, children(#{children.size}) : #{children_ids.inspect}")
     end
 
-    roots = root_ids.sort{|a, b| b <=> a}.map{|rid| tweets[rid]}
-    render :json => roots.to_json
+    root_ids.sort{|a, b| b <=> a}.map{|rid| tweets[rid]}
   end
+
+  private :conversation_roots
 end

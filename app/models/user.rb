@@ -71,6 +71,7 @@ class User < ActiveRecord::Base
       }
     end
 
+    tweets.each { |t| Util::Mongo.cache_tweet(t) }
     replies = tweets.reject { |t| t.in_reply_to_status_id.nil? }
     replies.each { |t| coll.insert t.to_hash }
   end
@@ -84,24 +85,34 @@ class User < ActiveRecord::Base
       loop do
         pids = tweets.map{ |r| r["in_reply_to_status_id"] }.reject(&:nil?).uniq
         break if pids.empty?
-        Util::Mongo.ensure_tweets(pids, twitter)
-        tweets = pids.map { |pid| Util::Mongo.ensure_tweet(pid, twitter) }
+        Util::Twitter.ensure_tweets(pids, twitter)
+        tweets = pids.map { |pid| Util::Twitter.ensure_tweet(pid, twitter) }
       end
     rescue Exception => e
       puts [[e.message] + e.backtrace].join("\n")
       replies.each do |r|
-        Util::Mongo.ensure_tweet_ancestry(r, twitter)
+        Util::Twitter.ensure_tweet_ancestry(r, twitter)
       end
     end
   end
 
+  def conversations_lock
+    Redis::Lock.new(id,
+                    :expiration => 5.minutes,
+                    :timeout => 5.minutes)
+  end
+  
   def ensure_conversations
-    lock = Redis::Lock.new(id,
-                           :expiration => 1.minute,
-                           :timeout => 1.minute)
+    Rails.logger.info "Ensuring conversations for user #{id}"
+    lock = self.conversations_lock
     lock.lock do
       fetch_replies
       ensure_tweets_ancestry
     end
+  end
+
+  def wait_for_conversations
+    lock = self.conversations_lock
+    lock.lock {}
   end
 end
