@@ -4,4 +4,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Twonversations::Application.load_tasks
+Twaddle::Application.load_tasks

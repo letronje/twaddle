@@ -11,7 +11,7 @@ class HomeController < ApplicationController
       return
     end
 
-    db = Mongo::Connection.new.db("twonversations")
+    db = Mongo::Connection.new.db("twaddle")
     twitter = user.twitter_client
 
     user.ensure_conversations(db)

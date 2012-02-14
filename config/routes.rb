@@ -1,6 +1,6 @@
 require 'resque/server'
 
-Twonversations::Application.routes.draw do
+Twaddle::Application.routes.draw do
   get "/logout" => "sessions#destroy", :as => :logout
   get "/conversations" => "home#conversations"
   

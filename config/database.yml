@@ -1,6 +1,6 @@
 development:
   adapter: mysql2
-  database: twonversations_dev
+  database: twaddle_dev
   pool: 5
   timeout: 5000
   username: root
@@ -8,7 +8,7 @@ development:
 
 test:
   adapter: mysql2
-  database: twonversations_test
+  database: twaddle_test
   pool: 5
   timeout: 5000
   username: root
@@ -16,7 +16,7 @@ test:
 
 production:
   adapter: mysql2
-  database: twonversations_prod
+  database: twaddle_prod
   pool: 5
   timeout: 5000
   username: root
