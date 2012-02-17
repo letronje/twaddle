@@ -17,47 +17,54 @@ class HomeController < ApplicationController
     render :json => roots.to_json
   end
 
+  def get_root_and_children(tweet, cache, twitter)
+    t = Util::Twitter.tweet_to_hash(tweet)
+    children_ids = Set.new
+    
+    root_id = loop do
+      id = t[:id]
+      pid = t[:pid]
+      
+      cache[id] ||= t
+      
+      if pid.nil?
+        break id
+      else
+        children_ids << id
+        t = cache[pid]
+        unless t
+          mt = Util::Twitter.ensure_tweet(pid, twitter)
+          t = Util::Twitter.tweet_to_hash(mt)
+        end
+      end
+    end
+
+    [root_id, children_ids]
+  end
+
+  def update_root(root_id, children_ids, cache)
+    root = cache[root_id]
+    children = cache.values_at(*children_ids)
+    
+    root[:c] = (root[:c] || Set.new).merge(children)
+    root[:wt] = [root[:wt], children_ids.size].max
+    root[:mid] = children.max_by { |c| c[:id] }[:id]
+  end
+  
   def conversation_roots(user)
     twitter = user.twitter_client
 
-    tweets = {}
+    cache = {}
     root_ids = Set.new
     
     user.replies.each do |tweet|
-      children_ids = Set.new
-
-      t = Util::Twitter.tweet_to_hash(tweet)
-      
-      root_id = loop do
-        id = t[:id]
-        pid = t[:pid]
-
-        tweets[id] ||= t
-        
-        if pid.nil?
-          break id
-        else
-          children_ids << id
-          t = tweets[pid]
-          unless t
-            mt = Util::Twitter.ensure_tweet(pid, twitter)
-            t = Util::Twitter.tweet_to_hash(mt)
-          end
-        end
-      end
+      root_id, children_ids = get_root_and_children(tweet, cache, twitter)
+      update_root(root_id, children_ids, cache)
       root_ids << root_id
-
-      root = tweets[root_id]
-      children = children_ids.map{|cid| tweets[cid] }
-
-      root[:c] = (root[:c] || Set.new).merge(children)
-      root[:wt] = [root[:wt], children_ids.size].max
-      root[:mid] = children.max_by { |c| c[:id] }[:id]
-
-      Rails.logger.info("Found root tweet #{root_id} for user #{user.id}, children(#{children.size}) : #{children_ids.inspect}")
+      Rails.logger.info("Found root tweet #{root_id} for user #{user.id}, children(#{children_ids.size}) : #{children_ids.inspect}")
     end
 
-    root_ids.sort{|a, b| b <=> a}.map{|rid| tweets[rid]}
+    root_ids.sort{|a, b| b <=> a}.map{|rid| cache[rid]}
   end
 
   private :conversation_roots
