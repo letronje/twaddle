@@ -50,9 +50,12 @@ class User < ActiveRecord::Base
 
         break all_tweets if tweets.size <= 1
         
+        Rails.logger.info("Found #{tweets.size} more tweets in timeline.")
+        
         all_tweets + tweets
       }.reverse
-
+      
+      Rails.logger.info("Found total of #{tweets.size} in timeline.")
     else
       tweets = 1.upto(max_attempts).reduce([]) { |all_tweets, n|
         if all_tweets.empty?
@@ -67,8 +70,11 @@ class User < ActiveRecord::Base
                                        :exclude_replies => false)
         break all_tweets if tweets.empty?
 
+        Rails.logger.info("Found #{tweets.size} more tweets in timeline.")
+
         all_tweets + tweets.reverse
       }
+      Rails.logger.info("Found total of #{tweets.size} MORE tweets in timeline.")
     end
 
     tweets.each { |t| Util::Mongo.cache_tweet(t) }
