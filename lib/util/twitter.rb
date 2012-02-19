@@ -1,12 +1,16 @@
 module Util
   class Twitter
     def self.ensure_tweet(id, twitter)
-      Rails.logger.info("Ensuring tweet #{id}")
-      tweet = Util::Mongo.tweet(id)
-      if tweet.nil?
-        Util::Mongo.cache_tweet(twitter.status(id))
+      begin
+        Rails.logger.info("Ensuring tweet #{id}")
+        tweet = Util::Mongo.tweet(id)
+        if tweet.nil?
+          Util::Mongo.cache_tweet(twitter.status(id))
+        end
+        Util::Mongo.tweet(id)
+      rescue Exception => e
+        Rails.logger.error ([e.message] + e.backtrace).join("\n")
       end
-      Util::Mongo.tweet(id)
     end
 
     def self.ensure_tweets(ids, twitter)

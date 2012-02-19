@@ -34,7 +34,11 @@ class HomeController < ApplicationController
         t = cache[pid]
         unless t
           mt = Util::Twitter.ensure_tweet(pid, twitter)
-          t = Util::Twitter.tweet_to_hash(mt)
+          if mt
+            t = Util::Twitter.tweet_to_hash(mt)
+          else
+            break id
+          end
         end
       end
     end
