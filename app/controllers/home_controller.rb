@@ -54,6 +54,18 @@ class HomeController < ApplicationController
     root[:wt] = [root[:wt], children_ids.size].max
     root[:mid] = children.max_by { |c| c[:id] }[:id]
   end
+
+  def print_roots(root_ids, cache)
+    total_c = root_ids.reduce(0) do |sum, root_id|
+      sum + cache[root_id][:c].size
+    end
+    Rails.logger.info "TOTAL(#{root_ids.size + total_c}), ROOTS(#{root_ids.size}), CHILDREN(#{total_c})"
+    # root_ids.each do |root_id|
+    #   root = cache[root_id]
+    #   children_ids = root[:c].map{|c| c[:id]}
+    #   Rails.logger.info root_id.to_s + " => " + children_ids.inspect
+    # end
+  end
   
   def conversation_roots(user)
     twitter = user.twitter_client
@@ -62,10 +74,12 @@ class HomeController < ApplicationController
     root_ids = Set.new
     
     user.replies.each do |tweet|
+      Rails.logger.info "\n\nFinding root tweets for #{tweet['id']}"
       root_id, children_ids = get_root_and_children(tweet, cache, twitter)
       update_root(root_id, children_ids, cache)
       root_ids << root_id
-      Rails.logger.info("Found root tweet #{root_id} for user #{user.id}, children(#{children_ids.size}) : #{children_ids.inspect}")
+      print_roots(root_ids, cache)
+      #Rails.logger.info("\tFound root tweet #{root_id} for user #{user.id}, children(#{children_ids.size}) : #{children_ids.inspect}")
     end
 
     root_ids.sort{|a, b| b <=> a}.map{|rid| cache[rid]}
